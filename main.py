@@ -7,13 +7,13 @@ def process_command(command):
         return 0
 
 
-def validate_input(input: str) -> str:
+def validate_input(calc_input: str) -> str:
     """Sanitises, checks for problematic inputs"""
 
-    input = input.replace(" ", "")  # Removing all spaces as unnecessary
+    calc_input = calc_input.replace(" ", "")  # Removing all spaces as unnecessary
 
 
-def remove_comments(input: str) -> str:
+def remove_comments(calc_input: str) -> str:
     """Removes comments denoted by '#' from the input"""
     # I wish regex was allowed.
 
@@ -22,7 +22,7 @@ def remove_comments(input: str) -> str:
     # Ensures that lines with multiple comments are caught
     while comments_exist:
 
-        comment_delimiter = input.find("#")
+        comment_delimiter = calc_input.find("#")
         # Terminating condition
         if comment_delimiter == -1:
             comments_exist = False
@@ -31,19 +31,19 @@ def remove_comments(input: str) -> str:
         # Remove the first '#' and everything preceding it, and find the
         # second '#'
         comment_delimiter_2 = (
-            input[comment_delimiter+1:].find("#") + comment_delimiter + 1)
+                calc_input[comment_delimiter + 1:].find("#") + comment_delimiter + 1)
 
-        input = input[:comment_delimiter] + input[comment_delimiter_2+1:]
+        calc_input = calc_input[:comment_delimiter] + calc_input[comment_delimiter_2 + 1:]
         # Removes the delimiting hashtags and everything between them. Gets
         # slice before first hashtag and concatenates to slice after second
         # hashtag If 2nd '#' not present, first '#' is removed and rest of
         # string is kept.
 
-    return input
+    return calc_input
 
 
-def input_validation_2(input):
-    print(input.split("#"))
+def input_validation_2(calc_input):
+    print(calc_input.split("#"))
 
 
 print(remove_comments("fsfhadsfadkl #dafadsf fasfasfdsfdas"))
