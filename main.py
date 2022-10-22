@@ -13,27 +13,23 @@ def process_command(command):
         return 0
 
 
-def validate_input(calc_input: str) -> str:
-    """Sanitises, checks for problematic inputs"""
+def validate_input(usr_input: str) -> str:
+    """Sanitises, removes comments, unnecessary characters inputs"""
 
-    calc_input = remove_comments(calc_input)
-    # Regex explanation:
-    # \s removes whitespace
-    # [] removes characters
-    # ^rd prevents the removal of the characters 'r', and 'd'
-    calc_input = re.sub("\s[^rd]|", "", calc_input)
-    return calc_input
-
-
-def remove_comments(calc_input: str) -> str:
-    """Removes comments delimited by '#' from the input to the calculator"""
     # Regex command does the following:
     # # finds a hashtag
     # () - gets all characters between the hashtags
     # .* - selects all text between the hashtags
     # ? - prevents regex from selecting text between two comments
-    calc_input = re.sub("#(.*?)#|#", "", calc_input)
-    return calc_input
+    usr_input = re.sub("#(.*?)#|#", "", usr_input)
+
+    # Regex explanation:
+    # \s removes whitespace
+    # [] removes characters
+    # ^rd prevents the removal of the characters 'r', and 'd'
+    usr_input = re.sub("\s[^rd]|", "", usr_input)
+
+    return usr_input
 
 
 def input_validation_2(calc_input):
