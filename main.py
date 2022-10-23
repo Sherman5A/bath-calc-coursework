@@ -6,38 +6,46 @@
 import re
 
 
-# if input_command == '=':
-#     return 0
-# else:
-#     return 0
-
-
 class SrpnStack:
 
-    def __init__(self, stack_contents: list, stack_counter=0):
+    def __init__(self, stack_contents: list):
         self.stack_contents = stack_contents
-        self.stack_counter = stack_counter
+        self.stack_counter = 0
+        self.stack_history = []
 
-    def push_stack(self, push_value: str, index=None):
+    def push_stack(self, push_value: int, push_to_history=True):
         """Pushes to SRPN stack, optional value for index"""
-        try:
-            push_value = int(push_value)
-            self.stack_counter += 1
-        except ValueError:
-            pass
-        if index is None:
-            self.stack_contents.append(push_value)
+
+        self.stack_counter += 1
+        self.stack_contents.append(push_value)
+        if push_to_history:
+            self.push_history(push_value)
+            print("Stack History {}".format(self.stack_history))
+
+    def push_history(self, push_value):
+        self.stack_history.append(push_value)
+
+    def operator_push_stack(self, operator_command: str):
+
+        if self.stack_counter < 2:
+            print("Not enough operands in stack")
             return
-        self.stack_contents.insert(index, push_value)
+
+        operand_stack = [self.pop_stack(-1), self.pop_stack()]
+        self.push_stack(self.execute_maths(operand_stack, operator_command),
+                        push_to_history=False)
+        self.push_history(operator_command)
 
     def pop_stack(self, index=None):
         """Remove and then return the stacks first value. If given index,
         removes and returns that index."""
+
+        self.stack_counter -= 1
         if index is None:
             return self.stack_contents.pop(-1)
-        return self.stack_contents.pop(index)
+        return self.stack_contents.pop(-index - 1)
 
-    def cool_maths(self):
+    def execute_maths(self, stack, input_operator):
         operator_function_dispatch = {
             "+": lambda x, y: x + y,
             "-": lambda x, y: x - y,
@@ -46,19 +54,26 @@ class SrpnStack:
             "%": lambda x, y: x % y,
             "^": lambda x, y: x ** y,
         }
+        return int(
+            operator_function_dispatch[input_operator](stack[-2], stack[-1]))
 
 
-def handle_srpn_command(validated_string: str, srpn_stack: list) -> list:
+def handle_srpn_command(sanitised_string: str, srpn_stack):
+    """Takes the command and executes the relevant SRPN class function"""
 
-    print(srpn_stack)
-    for count, element in enumerate(validated_string):
-        if operator_function_dispatch.get(element, False):
-            temp_stack = [srpn_stack.pop(count - 1), srpn_stack.pop(count - 2)]
-            print(temp_stack)
-            print(srpn_stack)
-        else:
-            srpn_stack.append(element)
-            return srpn_stack
+    srpn_command = re.findall("\d+|\W", sanitised_string)
+    print(srpn_command)
+    for element in srpn_command:
+        try:
+            element = int(element)
+            srpn_stack.push_stack(element)
+        except ValueError:
+            if element == "d":
+                pass
+            elif element == "f":
+                pass
+            elif element in "+*-/^%":
+                srpn_stack.operator_push_stack(element)
 
 
 def validate_input(usr_input: str) -> str:
@@ -79,15 +94,16 @@ def validate_input(usr_input: str) -> str:
 
     return usr_input
 
+
 # This is the entry point for the program.
 # It is suggested that you do not edit the below,
 # to ensure your code runs with the marking script
 if __name__ == "__main__":
-    srpn_stack = []
+    srpn_stack = SrpnStack([])
     while True:
         try:
             input_string = input()
             validated_string = validate_input(input_string)
-            srpn_stack = handle_srpn_command(validated_string, srpn_stack)
+            handle_srpn_command(validated_string, srpn_stack)
         except EOFError:
             exit()
