@@ -8,13 +8,15 @@ import re
 
 class SrpnStack:
 
-    def __init__(self, stack_contents: list):
-        self.stack_contents = stack_contents
+    def __init__(self):
+        self.stack_contents = []
+        # Stack counter keeps track of the number of operands in stack
+        # Prevents using an operator with only one operand.
         self.stack_counter = 0
         self.stack_history = []
 
     def push_stack(self, push_value: int, push_to_history=True):
-        """Pushes to SRPN stack, optional value for index"""
+        """Pushes to SRPN stack, optional argument for pushing to history"""
 
         self.stack_counter += 1
         self.stack_contents.append(push_value)
@@ -32,6 +34,8 @@ class SrpnStack:
             return
 
         operand_stack = [self.pop_stack(-1), self.pop_stack()]
+        # Pop last two elements off stack and place into temporary stack
+        # Do maths and push result
         self.push_stack(self.execute_maths(operand_stack, operator_command),
                         push_to_history=False)
         self.push_history(operator_command)
@@ -63,6 +67,15 @@ def handle_srpn_command(sanitised_string: str, srpn_stack):
 
     srpn_command = re.findall("\d+|\W", sanitised_string)
     print(srpn_command)
+    # Regex used as it allows for inputs on both single and multiline inputs
+    # Regex explanation:
+    # "\d" finds digits
+    # "+" finds more than one digit character in a row
+    # "|" is or
+    # \W finds non-words, such as symbols
+    # Combination of this with findall splits the string into a list of srpn
+    # operators
+
     for element in srpn_command:
         try:
             element = int(element)
@@ -79,18 +92,18 @@ def handle_srpn_command(sanitised_string: str, srpn_stack):
 def validate_input(usr_input: str) -> str:
     """Sanitises, removes comments, unnecessary characters inputs"""
 
+    usr_input = re.sub("#(.*?)#|#", "", usr_input)
     # Regex command does the following:
-    # # finds a hashtag
+    # '#' finds a hashtag
     # () - gets all characters between the hashtags
     # .* - selects all text between the hashtags
     # ? - prevents regex from selecting text between two comments
-    usr_input = re.sub("#(.*?)#|#", "", usr_input)
 
+    usr_input = re.sub("\s[^rd]|", "", usr_input)
     # Regex explanation:
     # \s removes whitespace
     # [] removes characters
     # ^rd prevents the removal of the characters 'r', and 'd'
-    usr_input = re.sub("\s[^rd]|", "", usr_input)
 
     return usr_input
 
