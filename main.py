@@ -25,31 +25,34 @@ class SrpnStack:
             print("Stack History {}".format(self.stack_history))
 
     def push_history(self, push_value):
+        """Push to the stack history"""
         self.stack_history.append(push_value)
 
     def operator_push_stack(self, operator_command: str):
+        """Perform a maths operator on the stack"""
 
         if self.stack_counter < 2:
             print("Not enough operands in stack")
             return
-
-        operand_stack = [self.pop_stack(-1), self.pop_stack()]
+        operand_stack = [self.pop_stack(1), self.pop_stack()]
         # Pop last two elements off stack and place into temporary stack
         # Do maths and push result
         self.push_stack(self.execute_maths(operand_stack, operator_command),
                         push_to_history=False)
         self.push_history(operator_command)
 
-    def pop_stack(self, index=None):
+    def pop_stack(self, index=0):
         """Remove and then return the stacks first value. If given index,
         removes and returns that index."""
 
         self.stack_counter -= 1
-        if index is None:
+        if index == 0:
             return self.stack_contents.pop(-1)
-        return self.stack_contents.pop(-index - 1)
+        return self.stack_contents.pop(- index - 1)
 
     def execute_maths(self, stack, input_operator):
+        """Maps maths to inline functions, ensures input is between min, max
+           limits"""
         operator_function_dispatch = {
             "+": lambda x, y: x + y,
             "-": lambda x, y: x - y,
@@ -69,15 +72,18 @@ def handle_srpn_command(sanitised_string: str, srpn_stack):
     print(srpn_command)
     # Regex used as it allows for inputs on both single and multiline inputs
     # Regex explanation:
-    # "\d" finds digits
-    # "+" finds more than one digit character in a row
-    # "|" is or
-    # \W finds non-words, such as symbols
+    # -? - matches "-" zero or more times, matching both negative and positive
+    # numbers
+    # \d - finds digits
+    # + - finds more than one digit character in number
+    # | - is an or statement
+    # \S - finds non-words whitespace characters, such as r and
     # Combination of this with findall splits the string into a list of srpn
     # operators
 
     for element in srpn_command:
         try:
+            # Check if input is integer
             element = int(element)
             srpn_stack.push_stack(element)
         except ValueError:
@@ -94,10 +100,12 @@ def validate_input(usr_input: str) -> str:
 
     usr_input = re.sub("#(.*?)#|#", "", usr_input)
     # Regex command does the following:
-    # '#' finds a hashtag
-    # () - gets all characters between the hashtags
+    # '#' - finds a hashtag
+    # () - groups the characters inside it
     # .* - selects all text between the hashtags
     # ? - prevents regex from selecting text between two comments
+    # | - or operator
+    # # - removes single hashtags
 
     usr_input = re.sub("\s[^rd]|", "", usr_input)
     # Regex explanation:
