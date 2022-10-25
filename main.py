@@ -4,6 +4,7 @@
 # Imports
 # Regex library is used for removing, replacing text
 import re
+import shunting as shunt
 
 
 class SrpnStack:
@@ -15,23 +16,20 @@ class SrpnStack:
         # Stack counter keeps track of the number of operands in stack
         # Prevents using an operator with only one operand.
         self.stack_counter = 0
-        self.stack_history = []
+        self.randoms_pushed = 0
 
     def output_result(self):
         """Output first element of stack"""
         return self.stack_contents[-1]
 
-    def push_stack(self, push_value: int, push_to_history=True):
-        """Pushes to SRPN stack, optional argument for pushing to history"""
+    def push_stack(self, push_value: int):
+        """Pushes to SRPN stack"""
+        if self.stack_counter > 22:
+            print("Stack overflow.")
+            return
 
         self.stack_counter += 1
         self.stack_contents.append(push_value)
-        if push_to_history:
-            self.push_history(push_value)
-
-    def push_history(self, push_value):
-        """Push to the stack history"""
-        self.stack_history.append(push_value)
 
     def operator_push_stack(self, operator_command: str):
         """Perform a maths operator on the stack"""
@@ -45,9 +43,7 @@ class SrpnStack:
         operand_stack = [self.pop_stack(1), self.pop_stack()]
         # Pop last two elements off stack and place into temporary stack
         # Do maths and push result
-        self.push_stack(self.execute_maths(operand_stack, operator_command),
-                        push_to_history=False)
-        self.push_history(operator_command)
+        self.push_stack(self.execute_maths(operand_stack, operator_command))
 
     def pop_stack(self, index=0):
         """Remove and then return the stacks first value. If given index,
@@ -71,13 +67,23 @@ class SrpnStack:
         }
         result = operator_function_dispatch[input_operator](stack[-2],
                                                             stack[-1])
-        # Executes inline lambda operator and typecasts to integer
         if result < 0:
             result = max(result, -2147483648)
         else:
             result = min(result, 2147483647)
         # Each operator is mapped to an inline function
         return int(result)
+
+    def push_random(self):
+        """Pushes number to stack"""
+
+        num_list = [1804289383, 846930886, 1681692777, 1714636915, 1957747793,
+                    424238335, 719885386, 1649760492, 596516649, 1189641421,
+                    1025202362, 1350490027, 783368690, 1102520059, 2044897763,
+                    1967513926, 1365180540, 1540383426, 304089172, 1303455736,
+                    35005211, 521595368]
+        self.push_stack(num_list[self.randoms_pushed])
+        self.randoms_pushed += 1
 
 
 def validate_operator(stack, operator):
@@ -92,10 +98,17 @@ def validate_operator(stack, operator):
     return True
 
 
-def handle_srpn_command(sanitised_string: str, srpn_stack):
+def regex_list(input):
+    srpn_command = re.findall(r"-?\d+|\S", input)
+    return srpn_command
+
+
+def handle_srpn_command(srpn_command, srpn_stack, needs_regex=True):
     """Takes the command and executes the relevant SRPN class function"""
 
-    srpn_command = re.findall(r"-?\d+|\S", sanitised_string)
+    if needs_regex is True:
+        srpn_command = regex_list(srpn_command)
+
     # Regex used as it allows for inputs on both single and multiline inputs
     # Regex explanation:
     # -? - matches "-" zero or more times, matching both negative and positive
@@ -111,9 +124,6 @@ def handle_srpn_command(sanitised_string: str, srpn_stack):
         try:
             # Check if input is integer
             element = int(element)
-            if srpn_stack.stack_counter > 22:
-                print("Stack overflow.")
-                return
             if element < 0:
                 element = max(element, -2147483648)
             element = min(element, 2147483647)
@@ -125,8 +135,7 @@ def handle_srpn_command(sanitised_string: str, srpn_stack):
                 for i in srpn_stack.stack_contents:
                     print(str(i))
             elif element == "r":
-                # TODO: add random functionality
-                pass
+                srpn_stack.push_random()
             elif element in "+*-/^%":
                 srpn_stack.operator_push_stack(element)
             else:  # Catches anything that passed through validation
@@ -162,7 +171,14 @@ if __name__ == "__main__":
     while True:
         try:
             input_string = input()
-            validated_string = validate_input(input_string)
-            handle_srpn_command(validated_string, srpn)
+            is_infix = re.match(r"\d+(\+|%|\/|\*|\^|-|--)*\d+", input_string)
+            if is_infix:
+                infix_command = re.findall(r"\d+|\S", input_string)
+                infix_command = shunt.shunting_algorithm(infix_command)
+                handle_srpn_command(infix_command, srpn, False)
+
+            else:
+                validated_string = validate_input(input_string)
+                handle_srpn_command(validated_string, srpn)
         except EOFError:
             exit()
