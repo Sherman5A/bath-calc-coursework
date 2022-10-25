@@ -8,8 +8,8 @@ import shunting as shunt
 
 
 class SrpnStack:
-    """Class behaves as stack for SRPN, supports functions for pushing, popping,
-       and performing maths"""
+    """Class behaves as stack for SRPN, supports functions for pushing,
+       popping,and performing maths"""
 
     def __init__(self):
         self.stack_contents = []
@@ -57,6 +57,8 @@ class SrpnStack:
     def execute_maths(self, stack, input_operator):
         """Maps maths to inline functions, ensures input is between min, max
            limits"""
+
+        # operator strings are have respective math functions
         operator_function_dispatch = {
             "+": lambda x, y: x + y,
             "-": lambda x, y: x - y,
@@ -65,6 +67,8 @@ class SrpnStack:
             "%": lambda x, y: x % y,
             "^": lambda x, y: x ** y,
         }
+
+        # Executes inline lambda operator associated with the string
         result = operator_function_dispatch[input_operator](stack[-2],
                                                             stack[-1])
         if result < 0:
@@ -125,10 +129,12 @@ def handle_srpn_command(srpn_command, srpn_stack, needs_regex=True):
             # Check if input is integer
             element = int(element)
             if element < 0:
+                # Prevents number from being lower than following
                 element = max(element, -2147483648)
+            # ^ but for positive numbers exceeding value
             element = min(element, 2147483647)
             srpn_stack.push_stack(element)
-        except ValueError:
+        except ValueError:  # Catches if element is not integer
             if element == "=":
                 print(srpn_stack.output_result())
             elif element == "d":
