@@ -1,5 +1,5 @@
-import re
-
+"""Takes basic infix notation and converts it to a list made for a reverse
+   polish notation calculator"""
 
 def shunting_algorithm(usr_input: list) -> list:
     """Creates reverse polish notation from an infix list"""
@@ -34,6 +34,9 @@ def shunting_algorithm(usr_input: list) -> list:
             if i == "-":
                 unary_negative = unary_check(unary_negative, operator_stack,
                                              output_queue)
+                if not unary_negative:
+                    # Add operator to stack if binary operator
+                    operator_stack.append(i)
                 continue
 
             for _ in operator_stack:
@@ -56,22 +59,15 @@ def shunting_algorithm(usr_input: list) -> list:
 def unary_check(unary_flag: bool, operator_stack: list,
                 output_queue: list) -> bool:
     """Performs checks to see if unary flag needs to be set to true."""
-    if unary_flag is False:
-        set_unary_flag = double_negative(operator_stack) or left_associate(
-            output_queue)
-        if set_unary_flag:
-            return True
-    else:
-        return False
+    if not unary_flag:
+        return double_negative(operator_stack) or left_associate(output_queue)
+    return False
 
 
 def double_negative(operator_stack: list) -> bool:
     """If there is a previous operator, set the unary flag to true."""
     try:
-        is_double_negative = operator_stack[-1] in "+*/%^-"
-        if is_double_negative is True:
-            return True
-        return False
+        return operator_stack[-1] in "+*/%^1-"
     except IndexError:  # If stack empty.
         return False
 
@@ -80,9 +76,6 @@ def left_associate(output_queue: list) -> bool:
     """Check that a number exists before the minus sign. If so, return true
        to set flag for unary negative."""
     try:
-        number_before_minus = output_queue[-1].isdigit()
-        if number_before_minus is False:
-            return True
-        return False
+        return not output_queue[-1].isdigit()
     except IndexError:  # If the stack is empty.
         return True

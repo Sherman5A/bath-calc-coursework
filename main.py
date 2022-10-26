@@ -8,8 +8,8 @@ import shunting as shunt
 
 
 class SrpnStack:
-    """Class behaves as stack for SRPN, supports functions for pushing,
-       popping,and performing maths"""
+    """Class behaves as a stack for SRPN, supports functions for pushing,
+       popping, and performing maths"""
 
     def __init__(self):
         self.stack_contents = []
@@ -23,7 +23,7 @@ class SrpnStack:
         return self.stack_contents[-1]
 
     def push_stack(self, push_value: int):
-        """Pushes to SRPN stack"""
+        """Pushes to SRPN stack, catches overflow"""
         if self.stack_counter > 22:
             print("Stack overflow.")
             return
@@ -54,9 +54,9 @@ class SrpnStack:
             return self.stack_contents.pop(-1)
         return self.stack_contents.pop(- index - 1)
 
-    def execute_maths(self, stack, input_operator):
+    def execute_maths(self, stack: list, input_operator: str) -> int:
         """Maps maths to inline functions, ensures input is between min, max
-           limits"""
+           limits, type casts to integer."""
 
         # operator strings are have respective math functions
         operator_function_dispatch = {
@@ -102,17 +102,10 @@ def validate_operator(stack, operator):
     return True
 
 
-def regex_list(input):
-    srpn_command = re.findall(r"-?\d+|\S", input)
-    return srpn_command
-
-
-def handle_srpn_command(srpn_command, srpn_stack, needs_regex=True):
-    """Takes the command and executes the relevant SRPN class function"""
-
-    if needs_regex is True:
-        srpn_command = regex_list(srpn_command)
-
+def regex_list(usr_input: str) -> list:
+    """Performs regex on input to return a list of the operators and
+       operands separated"""
+    srpn_command = re.findall(r"-?\d+|\S", usr_input)
     # Regex used as it allows for inputs on both single and multiline inputs
     # Regex explanation:
     # -? - matches "-" zero or more times, matching both negative and positive
@@ -122,7 +115,15 @@ def handle_srpn_command(srpn_command, srpn_stack, needs_regex=True):
     # | - is an or statement
     # \S - finds non-words whitespace characters, such as r and
     # Combination of this with findall splits the string into a list of srpn
-    # operators
+    # operators and operands.
+    return srpn_command
+
+
+def handle_srpn_command(srpn_command, srpn_stack, needs_regex=True):
+    """Takes the command and executes the relevant SRPN class function"""
+
+    if needs_regex is True:
+        srpn_command = regex_list(srpn_command)
 
     for element in srpn_command:
         try:
@@ -160,7 +161,7 @@ def validate_input(usr_input: str) -> str:
     # | - or operator
     # # - removes single hashtags
 
-    usr_input = re.sub(r"(?!r|d)[a-z]|\s(?!\d)", "", usr_input)
+    usr_input = re.sub(r"(?!r|d)[a-zA-Z]|\s(?!\d)", "", usr_input)
     # Regex explanation:
     # (?!) - do not match characters with r or d
     # [a-z] - try to match characters
@@ -175,6 +176,7 @@ def validate_input(usr_input: str) -> str:
 if __name__ == "__main__":
     srpn = SrpnStack()
     while True:
+
         try:
             input_string = input()
             validated_string = validate_input(input_string)
@@ -193,10 +195,9 @@ if __name__ == "__main__":
                 # \d+ detects one or more digits
                 # \S detects non whitespace characters
                 infix_command = shunt.shunting_algorithm(infix_command)
-                handle_srpn_command(infix_command, srpn, False)
-
+                handle_srpn_command(infix_command, srpn, needs_regex=False)
             else:
-                validated_string = validate_input(input_string)
                 handle_srpn_command(validated_string, srpn)
+
         except EOFError:
             exit()
