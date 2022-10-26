@@ -177,9 +177,21 @@ if __name__ == "__main__":
     while True:
         try:
             input_string = input()
-            is_infix = re.match(r"\d+(\+|%|\/|\*|\^|-|--)*\d+", input_string)
+            validated_string = validate_input(input_string)
+            is_infix = re.match(r"\d+(\+|%|\/|\*|\^|-|--)*\d+",
+                                validated_string)
+            # Regex for checking whether the input is infix:
+            # \d+ checks for one or more digits
+            # () enclose all signs and also double negatives
+            # * denotes there can be 0 or more occurrences of the brackets
+            # \d+ means that there has to be one or more digits
+            # afterwards without spaces
+
             if is_infix:
-                infix_command = re.findall(r"\d+|\S", input_string)
+                infix_command = re.findall(r"\d+|\S", validated_string)
+                # Regex command that splits the infix notation into a list
+                # \d+ detects one or more digits
+                # \S detects non whitespace characters
                 infix_command = shunt.shunting_algorithm(infix_command)
                 handle_srpn_command(infix_command, srpn, False)
 
