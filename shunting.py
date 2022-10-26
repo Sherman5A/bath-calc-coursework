@@ -1,6 +1,7 @@
 """Takes basic infix notation and converts it to a list made for a reverse
    polish notation calculator"""
 
+
 def shunting_algorithm(usr_input: list) -> list:
     """Creates reverse polish notation from an infix list"""
     # Order of operators for ODMAS.
