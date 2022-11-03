@@ -1,5 +1,6 @@
 /venv/
 /.vscode/
+/__pycache__/
 /.idea/bath-calc-coursework.iml
 /.idea/misc.xml
 /.idea/modules.xml
