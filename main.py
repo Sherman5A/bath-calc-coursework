@@ -4,6 +4,7 @@
 # Imports
 # Regex library is used for removing, replacing text
 import re
+import sys
 import shunting as shunt
 
 
@@ -20,7 +21,11 @@ class SrpnStack:
 
     def output_result(self):
         """Output first element of stack"""
-        return self.stack_contents[-1]
+
+        try:
+            return self.stack_contents[-1]
+        except IndexError:
+            return -1
 
     def push_stack(self, push_value: int):
         """Pushes to SRPN stack, catches overflow"""
@@ -86,6 +91,10 @@ class SrpnStack:
                     1025202362, 1350490027, 783368690, 1102520059, 2044897763,
                     1967513926, 1365180540, 1540383426, 304089172, 1303455736,
                     35005211, 521595368]
+
+        if self.randoms_pushed == len(num_list):
+            self.randoms_pushed = 0
+
         self.push_stack(num_list[self.randoms_pushed])
         self.randoms_pushed += 1
 
@@ -135,16 +144,27 @@ def handle_srpn_command(srpn_command, srpn_stack, needs_regex=True):
             # ^ but for positive numbers exceeding value
             element = min(element, 2147483647)
             srpn_stack.push_stack(element)
+
         except ValueError:  # Catches if element is not integer
+
             if element == "=":
-                print(srpn_stack.output_result())
+
+                stack_output = srpn_stack.output_result()
+                if stack_output == -1:
+                    print("Stack empty.")
+                    return
+                print(stack_output)
+
             elif element == "d":
                 for i in srpn_stack.stack_contents:
                     print(str(i))
+
             elif element == "r":
                 srpn_stack.push_random()
+
             elif element in "+*-/^%":
                 srpn_stack.operator_push_stack(element)
+
             else:  # Catches anything that passed through validation
                 print(f"Unrecognised operator or operand \"{element}\".")
 
@@ -161,7 +181,7 @@ def validate_input(usr_input: str) -> str:
     # | - or operator
     # # - removes single hashtags
 
-    usr_input = re.sub(r"(?!r|d)[a-zA-Z]|\s(?!\d)", "", usr_input)
+    usr_input = re.sub(r"\s(?!\d)", "", usr_input)
     # Regex explanation:
     # (?!) - do not match characters with r or d
     # [a-z] - try to match characters
@@ -174,6 +194,7 @@ def validate_input(usr_input: str) -> str:
 # It is suggested that you do not edit the below,
 # to ensure your code runs with the marking script
 if __name__ == "__main__":
+
     srpn = SrpnStack()
     while True:
 
@@ -200,4 +221,4 @@ if __name__ == "__main__":
                 handle_srpn_command(validated_string, srpn)
 
         except EOFError:
-            exit()
+            sys.exit()
