@@ -76,6 +76,7 @@ class SrpnStack:
         # Executes inline lambda operator associated with the string
         result = operator_function_dispatch[input_operator](stack[-2],
                                                             stack[-1])
+        # Emulate limits of srpn to recreate.
         if result < 0:
             result = max(result, -2147483648)
         else:
@@ -86,12 +87,14 @@ class SrpnStack:
     def push_random(self):
         """Pushes number to stack"""
 
+        # List of numbers found in SRPN emulator's random character
         num_list = [1804289383, 846930886, 1681692777, 1714636915, 1957747793,
                     424238335, 719885386, 1649760492, 596516649, 1189641421,
                     1025202362, 1350490027, 783368690, 1102520059, 2044897763,
                     1967513926, 1365180540, 1540383426, 304089172, 1303455736,
                     35005211, 521595368]
 
+        # Reset counter when at end of list
         if self.randoms_pushed == len(num_list):
             self.randoms_pushed = 0
 
@@ -156,6 +159,7 @@ def handle_srpn_command(srpn_command, srpn_stack, needs_regex=True):
                 print(stack_output)
 
             elif element == "d":
+                # Print Stack
                 for i in srpn_stack.stack_contents:
                     print(str(i))
 
@@ -201,7 +205,7 @@ if __name__ == "__main__":
         try:
             input_string = input()
             validated_string = validate_input(input_string)
-            is_infix = re.match(r"\d+(\+|%|\/|\*|\^|-|--)*\d+",
+            is_infix = re.match(r"(?:\d+|r+)(\+|%|\/|\*|\^|-|--)*(?:\d+|r+)",
                                 validated_string)
             # Regex for checking whether the input is infix:
             # \d+ checks for one or more digits

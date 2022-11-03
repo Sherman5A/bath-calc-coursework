@@ -4,7 +4,7 @@
 
 def shunting_algorithm(usr_input: list) -> list:
     """Creates reverse polish notation from an infix list"""
-    # Order of operators for ODMAS.
+    # Order of operators for ODMAS (no brackets).
     operator_precedence = {
         "^": 4,
         "%": 3,
@@ -21,8 +21,13 @@ def shunting_algorithm(usr_input: list) -> list:
 
         if i == " ":  # Ignore spaces
             continue
-
-        if i.isdigit():
+        elif i in "rd=":  # Catch special characters
+            output_queue.append(i)
+            continue
+        elif i.isalpha():
+            print(f"Unrecognised operator or operand \"{i}\".")
+            continue
+        elif i.isdigit():
             # If unary flag is set, make number negative.
             if unary_negative:
                 output_queue.append("-" + i)
@@ -30,7 +35,7 @@ def shunting_algorithm(usr_input: list) -> list:
                 unary_negative = False
                 continue
             output_queue.append(i)
-
+        # If the character is an operator
         else:
             if i == "-":
                 unary_negative = unary_check(unary_negative, operator_stack,
@@ -53,7 +58,11 @@ def shunting_algorithm(usr_input: list) -> list:
 
     # Once all input is processed append any operators left.
     for i in reversed(operator_stack):
-        output_queue.append(i)
+        if output_queue[-1] == "d":
+            # Ensure that d is not overwritten by operator.
+            output_queue.insert(-1, i)
+        else:
+            output_queue.append(i)
     return output_queue
 
 
