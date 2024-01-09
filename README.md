@@ -1,7 +1,7 @@
 # Bath Calculator Coursework
 
 **Features:**
-- Reverse polish notation support
+- Reverse Polish notation support
 - Basic infix notation support
 - Validation
 - Show stack
